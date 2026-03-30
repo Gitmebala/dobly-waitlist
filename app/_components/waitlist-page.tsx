@@ -32,8 +32,8 @@ function createParticles(count: number) {
     id: index,
     left: Math.random() * 100,
     top: Math.random() * 100,
-    size: Math.random() * 0.9 + 0.35,
-    duration: 5 + Math.random() * 8,
+    size: Math.random() * 0.55 + 0.2,
+    duration: 8 + Math.random() * 10,
     delay: Math.random() * 4,
     color: Math.random() > 0.9 ? 'rgba(196,154,42,0.82)' : Math.random() > 0.78 ? 'rgba(20,168,151,0.62)' : 'rgba(236,234,255,0.92)',
     opacity: 0.45 + Math.random() * 0.5
@@ -233,7 +233,7 @@ export function WaitlistPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[var(--bg)] text-[var(--text)]">
-      <ParticleField count={500} className="fixed inset-0 z-0 opacity-95" />
+      <ParticleField count={160} className="fixed inset-0 z-0 opacity-90" />
       <motion.nav initial={{ opacity: 0, y: -20 }} animate={loaded ? { opacity: 1, y: 0 } : {}} className={cn('fixed left-0 top-0 z-[100] w-full border-b transition duration-300', scrolled ? 'border-[rgba(255,255,255,0.06)] bg-[rgba(8,8,16,0.72)] backdrop-blur-[20px]' : 'border-transparent bg-transparent')}>
         <div className="mx-auto flex max-w-[1240px] items-center justify-between px-6 py-5 md:px-10">
           <Link href="/" className="flex items-center gap-3"><Logo className="h-9 w-9" animated /><span className="font-display text-[20px] font-extrabold lowercase tracking-[-0.04em]">dobly</span></Link>
@@ -242,7 +242,7 @@ export function WaitlistPage() {
       </motion.nav>
 
       <section className="relative min-h-screen px-6 pb-20 pt-[132px] md:px-10">
-        <ParticleField count={220} />
+        <ParticleField count={40} className="opacity-60" />
         <div className="relative mx-auto grid max-w-[1240px] gap-14 xl:grid-cols-[minmax(0,1fr)_420px] xl:items-center">
           <div className="max-w-[760px]">
             <div className="inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.03)] px-4 py-2 font-mono text-xs text-[var(--muted)] backdrop-blur-xl"><span className="h-2 w-2 rounded-full bg-[var(--teal-hi)]" />what needs to happen, happens.</div>
@@ -346,7 +346,7 @@ export function WaitlistPage() {
       </section>
 
       <section className="relative overflow-hidden px-6 py-24 md:px-10">
-        <ParticleField count={320} className="opacity-85" />
+        <ParticleField count={60} className="opacity-65" />
         <div className="relative mx-auto max-w-[1240px] text-center">
           <div ref={finalCounterRef}>
             <p className="font-body text-lg text-[var(--muted)]">Your first workflow is handled in</p>
