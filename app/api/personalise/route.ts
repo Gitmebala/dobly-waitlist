@@ -108,7 +108,11 @@ export async function POST(request: Request) {
       return NextResponse.json(fallbackSuggestion(businessType));
     }
 
-    if (!nvidia || !businessType) {
+    if (!businessType) {
+      return NextResponse.json(fallbackSuggestion(businessType));
+    }
+
+    if (!nvidia) {
       return NextResponse.json(fallbackSuggestion(businessType));
     }
 

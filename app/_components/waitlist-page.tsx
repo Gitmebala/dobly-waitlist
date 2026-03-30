@@ -10,7 +10,7 @@ import { COUNTDOWN_TARGET, TOTAL_SPOTS } from '@/lib/constants';
 type UseCaseCategoryId = (typeof useCaseCategories)[number]['id'];
 type SpotsResponse = { count: number; spotsLeft: number; percentFull: number };
 type WaitlistResponse = { success: true; position: number; spotsLeft: number } | { error: string; code?: string };
-type PersonaliseResponse = { automation: string; timeSaved: string; tools: string[] };
+type PersonaliseResponse = { automation: string; timeSaved: string; tools: string[] } | { error: string };
 
 const SEEDED_SPOTS = { count: 33, spotsLeft: 67, percentFull: 33 };
 
@@ -75,6 +75,7 @@ function WaitlistForm({ id, source, cta }: { id: string; source: string; cta: st
   const [workType, setWorkType] = useState('');
   const [personaliseStatus, setPersonaliseStatus] = useState<'idle' | 'loading' | 'done'>('idle');
   const [suggestion, setSuggestion] = useState<PersonaliseResponse | null>(null);
+  const [personaliseMessage, setPersonaliseMessage] = useState('');
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -125,10 +126,19 @@ function WaitlistForm({ id, source, cta }: { id: string; source: string; cta: st
         body: JSON.stringify({ businessType: workType })
       });
       const payload = (await response.json()) as PersonaliseResponse;
+      if ('error' in payload) {
+        setPersonaliseMessage(payload.error);
+        setShowPersonalise(false);
+        setPersonaliseStatus('idle');
+        return;
+      }
+
       setSuggestion(payload);
+      setPersonaliseMessage('');
       setPersonaliseStatus('done');
       setShowPersonalise(false);
     } catch {
+      setPersonaliseMessage('We could not generate that suggestion right now.');
       setShowPersonalise(false);
       setPersonaliseStatus('idle');
     }
@@ -179,21 +189,32 @@ function WaitlistForm({ id, source, cta }: { id: string; source: string; cta: st
             />
             <div className="mt-4 flex flex-wrap gap-3">
               <button type="submit" disabled={personaliseStatus === 'loading'} className="primary-cta rounded-[14px] px-5 py-3 font-display text-sm font-bold text-[#F5F4FF]">
-                {personaliseStatus === 'loading' ? 'Generating...' : 'Show me my automation -\u003e'}
+                {personaliseStatus === 'loading' ? 'Generating...' : 'Show me my automation '}
+                {'->'}
               </button>
               <button type="button" onClick={() => setShowPersonalise(false)} className="rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] px-5 py-3 font-body text-sm text-[var(--text)]">
-                Skip -\u003e
+                Skip {'->'}
               </button>
             </div>
           </motion.form>
         ) : null}
 
+        {personaliseMessage ? (
+          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mt-4 font-body text-sm text-[var(--text)]">
+            {personaliseMessage}
+          </motion.p>
+        ) : null}
+
         {suggestion ? (
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="mt-5 rounded-[18px] border border-[rgba(79,70,229,0.22)] bg-[rgba(79,70,229,0.1)] px-5 py-5">
             <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--muted)]">Your first Dobly automation</p>
-            <p className="mt-3 font-display text-[22px] font-bold leading-[1.2] text-[var(--text)]">{suggestion.automation}</p>
-            <p className="mt-3 font-mono text-xs text-[var(--accent)]">Saves approximately {suggestion.timeSaved}</p>
-            <p className="mt-2 font-body text-sm text-[var(--muted)]">Uses: {suggestion.tools.join(', ')}</p>
+            {'error' in suggestion ? null : (
+              <>
+                <p className="mt-3 font-display text-[22px] font-bold leading-[1.2] text-[var(--text)]">{suggestion.automation}</p>
+                <p className="mt-3 font-mono text-xs text-[var(--accent)]">Saves approximately {suggestion.timeSaved}</p>
+                <p className="mt-2 font-body text-sm text-[var(--muted)]">Uses: {suggestion.tools.join(', ')}</p>
+              </>
+            )}
           </motion.div>
         ) : null}
       </AnimatePresence>
