@@ -16,16 +16,20 @@ const schema = z.object({
 
 function emailHtml(position: number) {
   return `
-  <div style="background:#040706;padding:40px 24px;color:#E2F0EA;font-family:'DM Sans',Arial,sans-serif">
-    <div style="max-width:560px;margin:0 auto;border:1px solid rgba(0,223,160,0.12);border-radius:20px;background:#080F0C;padding:32px">
-      <p style="font-family:'DM Mono',monospace;color:#00DFA0;font-size:12px;letter-spacing:0.24em;text-transform:uppercase">Dobly founding member</p>
-      <h1 style="font-family:'Syne',Arial,sans-serif;font-size:34px;line-height:1.02;margin:16px 0 0">Your founding spot #${position} is reserved.</h1>
-      <p style="margin:18px 0 0;color:#4E7A65;line-height:1.7">$12/month is locked forever for you. Dobly launches on April 1st.</p>
-      <div style="margin-top:24px;padding:18px;border-radius:16px;background:rgba(0,223,160,0.06);border:1px solid rgba(0,223,160,0.2)">
-        <p style="margin:0 0 8px;font-weight:700">What happens next</p>
-        <p style="margin:0;color:#4E7A65;line-height:1.7">We’ll email you before launch with onboarding details, your founding pricing, and first access instructions.</p>
+  <div style="background:#080810;padding:40px 24px;color:#E6E4F8;font-family:'DM Sans',Arial,sans-serif">
+    <div style="max-width:560px;margin:0 auto;border:1px solid rgba(255,255,255,0.08);border-radius:24px;background:linear-gradient(180deg,rgba(26,25,51,0.94),rgba(13,12,28,0.92));padding:32px">
+      <p style="margin:0;font-family:'DM Mono',monospace;color:#6E6C90;font-size:12px;letter-spacing:0.24em;text-transform:uppercase">Dobly waitlist</p>
+      <h1 style="margin:16px 0 0;font-family:'Syne',Arial,sans-serif;font-size:34px;line-height:1.02;color:#E6E4F8">You have successfully joined the Dobly waitlist.</h1>
+      <p style="margin:18px 0 0;color:#A6A2C7;line-height:1.8;font-size:16px">Your founding member spot <strong style="color:#C49A2A">#${position}</strong> is now reserved. We are glad you got in early, because founding members will be the first people we bring into Dobly when access opens.</p>
+      <div style="margin-top:24px;padding:18px;border-radius:18px;background:rgba(79,70,229,0.12);border:1px solid rgba(79,70,229,0.24)">
+        <p style="margin:0 0 8px;font-weight:700;color:#E6E4F8">What happens next</p>
+        <p style="margin:0;color:#A6A2C7;line-height:1.8">Your <strong style="color:#E6E4F8">$12/month founding price</strong> is locked in. We will notify you before launch on April 27 with your access details, next steps, and everything you need to get started.</p>
       </div>
-      <p style="margin-top:24px;color:#4E7A65;line-height:1.7">Michael Bala<br/>Founder, Dobly · Built in Mombasa 🇰🇪</p>
+      <div style="margin-top:24px;padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)">
+        <p style="margin:0;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#14A897">Founding members go first</p>
+        <p style="margin:8px 0 0;color:#A6A2C7;line-height:1.7">You are part of the earliest group shaping what Dobly becomes from day one.</p>
+      </div>
+      <p style="margin-top:24px;color:#A6A2C7;line-height:1.7">Michael Bala<br/>Founder, Dobly · Built in Mombasa, Kenya</p>
     </div>
   </div>`;
 }
@@ -53,7 +57,7 @@ export async function POST(request: Request) {
     const { data: existing } = await supabase.from('waitlist').select('id').eq('email', email).maybeSingle();
 
     if (existing) {
-      return NextResponse.json({ error: 'This email is already on the list 🎉', code: 'DUPLICATE' }, { status: 409 });
+      return NextResponse.json({ error: 'This email is already on the list.', code: 'DUPLICATE' }, { status: 409 });
     }
 
     const { count, error: countError } = await supabase.from('waitlist').select('*', { count: 'exact', head: true });
@@ -61,7 +65,7 @@ export async function POST(request: Request) {
 
     const currentCount = count ?? 0;
     if (currentCount >= TOTAL_SPOTS) {
-      return NextResponse.json({ error: 'All founding spots claimed — join the regular waitlist', code: 'FULL' }, { status: 409 });
+      return NextResponse.json({ error: 'All founding spots claimed - join the regular waitlist.', code: 'FULL' }, { status: 409 });
     }
 
     const position = currentCount + 1;
@@ -72,7 +76,7 @@ export async function POST(request: Request) {
       await resend.emails.send({
         from: 'Dobly <onboarding@resend.dev>',
         to: email,
-        subject: `Your founding spot #${position} is reserved — $12/month locked forever`,
+        subject: `You are officially on the Dobly waitlist - founding spot #${position}`,
         html: emailHtml(position)
       });
     }
