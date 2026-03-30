@@ -7,6 +7,8 @@ import { comparisonRows, terminalPrompts, useCaseCategories } from '@/app/_compo
 import { Logo } from '@/app/_components/logo';
 import { COUNTDOWN_TARGET, TOTAL_SPOTS } from '@/lib/constants';
 
+type UseCaseCategoryId = (typeof useCaseCategories)[number]['id'];
+
 type SpotsResponse = { count: number; spotsLeft: number; percentFull: number };
 type WaitlistResponse = { success: true; position: number; spotsLeft: number } | { error: string; code?: string };
 
@@ -164,7 +166,7 @@ export function WaitlistPage() {
   const [scrolled, setScrolled] = useState(false);
   const [source, setSource] = useState('direct');
   const [spots, setSpots] = useState<SpotsResponse>({ count: 0, spotsLeft: TOTAL_SPOTS, percentFull: 0 });
-  const [activeTab, setActiveTab] = useState(useCaseCategories[0].id);
+  const [activeTab, setActiveTab] = useState<UseCaseCategoryId>(useCaseCategories[0].id);
   const [typedTen, setTypedTen] = useState(0);
   const finalCounterRef = useRef<HTMLDivElement>(null);
   const finalCounterInView = useInView(finalCounterRef, { once: true, amount: 0.4 });
