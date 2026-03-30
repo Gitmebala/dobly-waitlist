@@ -1,5 +1,5 @@
 export const terminalPrompts = [
-  'When a salon booking is created, send a WhatsApp confirmation instantly, remind the client 24 hours before, and fill cancelled slots from the waitlist.',
+  'When a salon booking is created, send a WhatsApp confirmation instantly, remind the client 24 hours before, and refill cancelled slots from the waitlist.',
   'When a new lead fills a law firm intake form, assign the lead, send a reply in under 2 minutes, and schedule the consultation automatically.',
   'When a client invoice becomes overdue, send polite follow-ups on day 3, day 7, and day 14 until payment lands.',
   'When a real estate inquiry comes in, send the listing brochure, notify the right agent, and create the follow-up task automatically.',
@@ -19,81 +19,228 @@ export const terminalPrompts = [
 
 export const useCaseCategories = [
   {
-    id: 'service-businesses',
-    label: 'Service businesses',
-    emoji: '🏪',
+    id: 'salons-spas',
+    label: 'Salons and spas',
+    emoji: 'Scissors',
     items: [
-      { problem: 'Missed bookings and no-shows keep punching holes in the week.', solution: '→ Confirm bookings instantly, remind clients, and refill cancelled slots automatically' },
-      { problem: 'Staff spend mornings answering the same appointment questions again and again.', solution: '→ Auto-reply with pricing, availability, and booking links the moment someone asks' },
-      { problem: 'You only realise a client forgot their appointment when the hour is already lost.', solution: '→ Trigger reminder sequences before every booking so fewer slots go empty' },
-      { problem: 'Every payment still needs a manual thank-you, receipt, and spreadsheet update.', solution: '→ Send the message, issue the receipt, and log the payment on every transaction' },
-      { problem: 'Follow-ups after quotes go cold because nobody remembers at the right moment.', solution: '→ Chase every quote automatically until the prospect books or says no' },
-      { problem: 'Referrals are happening, but nobody captures them properly or follows up fast.', solution: '→ Route every referral to the right person and trigger a same-day response' }
+      { problem: 'No-shows quietly destroy appointment revenue every week.', solution: '-> Confirm bookings, send reminders, and refill cancelled slots automatically' },
+      { problem: 'Every payment still triggers a manual thank-you and follow-up.', solution: '-> Send receipts, WhatsApp thank-yous, and review requests after every visit' }
     ]
   },
   {
-    id: 'agencies-consultants',
-    label: 'Agencies & consultants',
-    emoji: '📈',
+    id: 'clinics',
+    label: 'Clinics',
+    emoji: 'Cross',
     items: [
-      { problem: 'Weekly client updates still rely on someone remembering to build them.', solution: '→ Compile each report and send it every week without a manual checklist' },
-      { problem: 'New leads sit too long before someone replies, and good deals die quietly.', solution: '→ Reply within minutes, assign an owner, and create the next action automatically' },
-      { problem: 'Client onboarding takes the same setup work every single time.', solution: '→ Generate folders, forms, tasks, and kickoff emails the instant a deal closes' },
-      { problem: 'Invoices go out, but collections still depend on awkward manual chasing.', solution: '→ Send overdue reminders on schedule until payment clears' },
-      { problem: 'Campaign launches involve five tools and too many human handoffs.', solution: '→ Trigger launch notifications, logs, and approvals from one event' },
-      { problem: 'Account managers are updating CRMs after meetings long after details are forgotten.', solution: '→ Turn meeting notes into CRM updates and follow-up tasks automatically' }
+      { problem: 'Patients miss prep instructions because staff send them too late.', solution: '-> Send booking confirmations, prep details, and same-day reminders automatically' },
+      { problem: 'Urgent inbound messages wait too long before the right person sees them.', solution: '-> Route urgent messages instantly to the correct clinician or front-desk lead' }
     ]
   },
   {
-    id: 'shops-ecommerce',
-    label: 'Shops & ecommerce',
-    emoji: '🛍️',
+    id: 'law-firms',
+    label: 'Law firms',
+    emoji: 'Scale',
     items: [
-      { problem: 'Orders are coming in, but inventory and fulfilment still need manual updates.', solution: '→ Update stock, notify fulfilment, and message the buyer instantly' },
-      { problem: 'Abandoned carts are just lost money because nobody follows them up on time.', solution: '→ Trigger email and WhatsApp recovery flows automatically after cart abandonment' },
-      { problem: 'Customers ask for delivery updates and the team answers one by one.', solution: '→ Push shipping updates automatically whenever order status changes' },
-      { problem: 'You find out a product is out of stock after customers already try to buy it.', solution: '→ Send low-stock alerts before you run out and pause ads if needed' },
-      { problem: 'Five-star buyers leave happy, but nobody asks for reviews or repeat orders fast enough.', solution: '→ Trigger review requests and repeat-purchase offers after delivery' },
-      { problem: 'Refunds and exceptions slip through the cracks because nobody logs them consistently.', solution: '→ Record every refund, notify the right person, and flag unusual patterns' }
+      { problem: 'High-value leads go cold because reply speed depends on who is free.', solution: '-> Reply within minutes, assign the matter, and book consultations automatically' },
+      { problem: 'Document collection drags because no one follows up consistently.', solution: '-> Chase missing documents until the case file is complete' }
     ]
   },
   {
-    id: 'freelancers',
-    label: 'Freelancers',
-    emoji: '🧑‍💻',
+    id: 'accounting',
+    label: 'Accounting firms',
+    emoji: 'Ledger',
     items: [
-      { problem: 'A project gets approved and then you still manually create folders, contracts, and invoices.', solution: '→ Spin up the project workspace and send paperwork the second approval happens' },
-      { problem: 'Leads come from three places and the follow-up process is different every time.', solution: '→ Capture every lead in one place and send the right reply instantly' },
-      { problem: 'Client feedback arrives in fragments and task lists get rebuilt by hand.', solution: '→ Turn feedback into tasks with due dates the moment it lands' },
-      { problem: 'You lose time every week reminding clients about unpaid invoices.', solution: '→ Chase overdue invoices automatically while you stay focused on delivery' },
-      { problem: 'Discovery calls happen, but the proposal and recap still depend on end-of-day energy.', solution: '→ Send the recap, proposal, and next-step reminder automatically after the call' },
-      { problem: 'You are doing admin work at night because your client ops only live in your head.', solution: '→ Let Dobly run your onboarding, follow-up, and payment admin for you' }
+      { problem: 'Clients upload records late and month-end turns chaotic fast.', solution: '-> Send recurring document reminders and escalate the missing accounts automatically' },
+      { problem: 'Invoice collection becomes awkward manual chasing every month.', solution: '-> Trigger polite reminder sequences until payment lands' }
     ]
   },
   {
-    id: 'health-education',
-    label: 'Clinics & schools',
-    emoji: '🏥',
+    id: 'agencies',
+    label: 'Marketing agencies',
+    emoji: 'Megaphone',
     items: [
-      { problem: 'Parents and patients ask the same scheduling questions every day.', solution: '→ Auto-answer booking, timing, and prep questions as soon as they come in' },
-      { problem: 'Missed appointments create costly gaps that staff only notice too late.', solution: '→ Trigger reminder sequences that reduce no-shows before they happen' },
-      { problem: 'Enrollment and intake forms arrive, but processing them is still manual.', solution: '→ Move every form into the right system and trigger the next communication step' },
-      { problem: 'Staff keep sending the same admin reminders by hand every week.', solution: '→ Automate the reminders for payments, documents, and upcoming visits' },
-      { problem: 'Follow-up after visits or consultations is inconsistent because it depends on memory.', solution: '→ Send every follow-up message and task on a reliable schedule' },
-      { problem: 'Urgent issues can sit too long before the right person sees them.', solution: '→ Escalate priority cases instantly to the right staff member' }
+      { problem: 'Weekly client reports still depend on someone building them by hand.', solution: '-> Compile and send client-ready performance reports every Monday automatically' },
+      { problem: 'New leads sit too long before someone follows up.', solution: '-> Enrich, assign, and reply to every inbound lead in minutes' }
     ]
   },
   {
-    id: 'property-finance',
-    label: 'Property & finance',
-    emoji: '🏢',
+    id: 'consultants',
+    label: 'Consultants',
+    emoji: 'Briefcase',
     items: [
-      { problem: 'Property inquiries come in fast, but response speed still depends on who is free.', solution: '→ Route every inquiry to the right agent and send details immediately' },
-      { problem: 'Viewings, inspections, and reminder calls are still stitched together manually.', solution: '→ Confirm appointments, remind clients, and update calendars from one trigger' },
-      { problem: 'Document collection slows down deals because follow-up is inconsistent.', solution: '→ Chase missing documents automatically until the file is complete' },
-      { problem: 'Leads from ads and referrals are getting lost between WhatsApp, email, and forms.', solution: '→ Capture every lead into one workflow with ownership and next actions assigned' },
-      { problem: 'Payment reminders are too manual, too late, and too awkward.', solution: '→ Trigger payment reminder sequences before and after due dates automatically' },
-      { problem: 'Managers only get the numbers when someone has time to compile them.', solution: '→ Send daily or weekly pipeline summaries without manual reporting' }
+      { problem: 'Proposal follow-up is inconsistent and promising deals go stale.', solution: '-> Follow up on every proposal until it closes or gets declined' },
+      { problem: 'Client onboarding repeats the same manual setup every time.', solution: '-> Create workspaces, forms, kickoff emails, and task lists when a deal closes' }
+    ]
+  },
+  {
+    id: 'ecommerce',
+    label: 'Ecommerce stores',
+    emoji: 'Cart',
+    items: [
+      { problem: 'Abandoned carts are just lost revenue because no one chases them on time.', solution: '-> Trigger recovery emails and WhatsApp nudges at the right intervals automatically' },
+      { problem: 'Operations still update fulfilment and inventory manually after each order.', solution: '-> Sync stock, notify fulfilment, and update buyers as order status changes' }
+    ]
+  },
+  {
+    id: 'retail',
+    label: 'Retail shops',
+    emoji: 'Store',
+    items: [
+      { problem: 'You only notice low stock when customers start asking for what is gone.', solution: '-> Trigger reorder alerts before stock-outs happen' },
+      { problem: 'Repeat buyers never get followed up at the right time.', solution: '-> Send post-purchase check-ins and repeat-order prompts automatically' }
+    ]
+  },
+  {
+    id: 'restaurants',
+    label: 'Restaurants',
+    emoji: 'Plate',
+    items: [
+      { problem: 'Reservations are confirmed manually and no-shows still happen.', solution: '-> Confirm reservations instantly and send timed reminder messages automatically' },
+      { problem: 'Customer feedback arrives across channels and no one closes the loop fast enough.', solution: '-> Capture reviews, alert the manager, and trigger the right follow-up automatically' }
+    ]
+  },
+  {
+    id: 'hotels',
+    label: 'Hotels',
+    emoji: 'Key',
+    items: [
+      { problem: 'Guests ask the same pre-arrival questions over and over.', solution: '-> Send check-in details, upsells, and arrival info before each stay automatically' },
+      { problem: 'Post-stay review requests only go out when someone remembers.', solution: '-> Ask for feedback and reviews right after checkout without manual work' }
+    ]
+  },
+  {
+    id: 'real-estate',
+    label: 'Real estate',
+    emoji: 'House',
+    items: [
+      { problem: 'Property inquiries come in fast, but follow-up depends on who is online.', solution: '-> Route every inquiry to the right agent and send the listing pack immediately' },
+      { problem: 'Viewing reminders still rely on manual messages and calendar cleanup.', solution: '-> Confirm viewings, send reminders, and update calendars from one trigger' }
+    ]
+  },
+  {
+    id: 'property-managers',
+    label: 'Property managers',
+    emoji: 'Building',
+    items: [
+      { problem: 'Maintenance requests get lost between calls, texts, and email threads.', solution: '-> Turn every maintenance request into an assigned task with tenant updates' },
+      { problem: 'Rent follow-up is too manual and too late.', solution: '-> Trigger payment reminders before and after due dates automatically' }
+    ]
+  },
+  {
+    id: 'recruiters',
+    label: 'Recruiters',
+    emoji: 'Users',
+    items: [
+      { problem: 'Candidate applications sit untouched until someone opens the inbox.', solution: '-> Score, shortlist, and send the next-step message automatically' },
+      { problem: 'Interview scheduling burns hours every week.', solution: '-> Coordinate interview slots, confirmations, and reminders without back-and-forth' }
+    ]
+  },
+  {
+    id: 'freelance-designers',
+    label: 'Design freelancers',
+    emoji: 'Palette',
+    items: [
+      { problem: 'A project gets approved and you still spend the next hour doing admin.', solution: '-> Create folders, send contracts, issue invoices, and schedule kickoff automatically' },
+      { problem: 'Feedback comes in fragments and timeline updates become manual cleanup.', solution: '-> Turn feedback into tasks and notify the client of the updated timeline' }
+    ]
+  },
+  {
+    id: 'freelance-developers',
+    label: 'Developer freelancers',
+    emoji: 'Code',
+    items: [
+      { problem: 'Leads come from everywhere and follow-up quality changes each time.', solution: '-> Capture every lead in one place and send the right first reply instantly' },
+      { problem: 'Invoices and payment reminders still happen at the end of a tiring day.', solution: '-> Send invoices and overdue follow-ups automatically when milestones are hit' }
+    ]
+  },
+  {
+    id: 'coaches',
+    label: 'Coaches',
+    emoji: 'Target',
+    items: [
+      { problem: 'Prospects ask about packages, but the reply speed is inconsistent.', solution: '-> Send pricing, booking links, and a follow-up sequence the moment someone inquires' },
+      { problem: 'Client check-ins only happen when you remember to send them.', solution: '-> Trigger recurring progress check-ins and reminders for every client automatically' }
+    ]
+  },
+  {
+    id: 'creators',
+    label: 'Creators',
+    emoji: 'Camera',
+    items: [
+      { problem: 'Brand inquiries disappear across DMs, email, and forms.', solution: '-> Capture partnership leads, respond fast, and log them automatically' },
+      { problem: 'Sponsorship deliverables get tracked manually and slip late.', solution: '-> Create tasks, reminders, and status updates for every campaign automatically' }
+    ]
+  },
+  {
+    id: 'schools',
+    label: 'Schools',
+    emoji: 'School',
+    items: [
+      { problem: 'Parents miss payment, event, or document reminders because outreach is inconsistent.', solution: '-> Send scheduled reminders and confirmations automatically' },
+      { problem: 'Admissions follow-up slows because nobody keeps the sequence moving.', solution: '-> Follow up on every inquiry until the application is completed or closed' }
+    ]
+  },
+  {
+    id: 'gyms',
+    label: 'Gyms',
+    emoji: 'Dumbbell',
+    items: [
+      { problem: 'Membership leads ask for pricing and then disappear before anyone follows up.', solution: '-> Send pricing, FAQs, and booking nudges automatically after each inquiry' },
+      { problem: 'Class reminders and payment follow-ups still take staff time every day.', solution: '-> Trigger class reminders and failed-payment follow-ups automatically' }
+    ]
+  },
+  {
+    id: 'logistics',
+    label: 'Logistics',
+    emoji: 'Truck',
+    items: [
+      { problem: 'Customers keep asking where their delivery is because updates are not proactive.', solution: '-> Push shipment updates automatically at every status change' },
+      { problem: 'Exceptions and delays are noticed too late by the ops team.', solution: '-> Alert the right person the moment a route or delivery goes off-plan' }
+    ]
+  },
+  {
+    id: 'construction',
+    label: 'Construction',
+    emoji: 'Crane',
+    items: [
+      { problem: 'Site updates and approvals still move through messy chat threads.', solution: '-> Trigger approval requests, status updates, and reminder escalations automatically' },
+      { problem: 'Subcontractor invoices need manual checking before anyone notices an issue.', solution: '-> Compare invoice values against budget and flag anomalies automatically' }
+    ]
+  },
+  {
+    id: 'events',
+    label: 'Events',
+    emoji: 'Calendar',
+    items: [
+      { problem: 'Vendor and guest communication still depends on frantic manual follow-up.', solution: '-> Send confirmations, reminders, and day-of updates automatically' },
+      { problem: 'Leads from event inquiries cool off while the team is busy producing current work.', solution: '-> Reply instantly, qualify the lead, and schedule the next step automatically' }
+    ]
+  },
+  {
+    id: 'support',
+    label: 'Support teams',
+    emoji: 'Headset',
+    items: [
+      { problem: 'Urgent tickets only move fast if the right person sees them in time.', solution: '-> Route urgent cases instantly and alert the right owner automatically' },
+      { problem: 'Customers ask for updates while the ticket is still sitting in the queue.', solution: '-> Send proactive status updates until the issue is resolved' }
+    ]
+  },
+  {
+    id: 'finance-ops',
+    label: 'Finance teams',
+    emoji: 'Coins',
+    items: [
+      { problem: 'Collections are inconsistent because reminder timing depends on memory.', solution: '-> Run invoice reminder sequences before and after due dates automatically' },
+      { problem: 'Large transactions and exceptions only get noticed after the fact.', solution: '-> Alert the team immediately when high-risk transactions appear' }
+    ]
+  },
+  {
+    id: 'travel',
+    label: 'Travel businesses',
+    emoji: 'Plane',
+    items: [
+      { problem: 'Booking updates and itinerary reminders still get sent one by one.', solution: '-> Send confirmations, itineraries, and reminder messages automatically' },
+      { problem: 'Lead response time drops whenever the team is handling current clients.', solution: '-> Reply to every inquiry fast and route it to the right travel advisor automatically' }
     ]
   }
 ] as const;
@@ -105,6 +252,6 @@ export const comparisonRows = [
   ['Plain-English', '✗', '✗', '✓'],
   ['M-PESA native', '✗', '✗', '✓'],
   ['WhatsApp alerts', '✗', '✗', '✓'],
-  ['For your business', 'Limited', 'Limited', '✓'],
+  ['For your life too', '✗', '✗', '✓'],
   ['Time to first', '~2 hrs', '~3 hrs', '~2 minutes']
 ] as const;

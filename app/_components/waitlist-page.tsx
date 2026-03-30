@@ -8,9 +8,11 @@ import { Logo } from '@/app/_components/logo';
 import { COUNTDOWN_TARGET, TOTAL_SPOTS } from '@/lib/constants';
 
 type UseCaseCategoryId = (typeof useCaseCategories)[number]['id'];
-
 type SpotsResponse = { count: number; spotsLeft: number; percentFull: number };
 type WaitlistResponse = { success: true; position: number; spotsLeft: number } | { error: string; code?: string };
+type PersonaliseResponse = { automation: string; timeSaved: string; tools: string[] };
+
+const SEEDED_SPOTS = { count: 33, spotsLeft: 67, percentFull: 33 };
 
 function cn(...values: Array<string | undefined | false | null>) {
   return values.filter(Boolean).join(' ');
@@ -66,8 +68,13 @@ function ParticleField({ count, className }: { count: number; className?: string
 
 function WaitlistForm({ id, source, cta }: { id: string; source: string; cta: string }) {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
   const [message, setMessage] = useState('');
+  const [position, setPosition] = useState<number | null>(null);
+  const [showPersonalise, setShowPersonalise] = useState(false);
+  const [workType, setWorkType] = useState('');
+  const [personaliseStatus, setPersonaliseStatus] = useState<'idle' | 'loading' | 'done'>('idle');
+  const [suggestion, setSuggestion] = useState<PersonaliseResponse | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -76,7 +83,10 @@ function WaitlistForm({ id, source, cta }: { id: string; source: string; cta: st
       setMessage('Enter a valid email address.');
       return;
     }
+
     setStatus('loading');
+    setMessage('');
+
     try {
       const response = await fetch('/api/waitlist', {
         method: 'POST',
@@ -84,9 +94,11 @@ function WaitlistForm({ id, source, cta }: { id: string; source: string; cta: st
         body: JSON.stringify({ email, source })
       });
       const payload = (await response.json()) as WaitlistResponse;
+
       if ('success' in payload) {
         setStatus('success');
-        setMessage(`Spot #${payload.position} reserved.`);
+        setPosition(payload.position);
+        setShowPersonalise(true);
       } else {
         setStatus('error');
         setMessage(payload.error);
@@ -94,6 +106,31 @@ function WaitlistForm({ id, source, cta }: { id: string; source: string; cta: st
     } catch {
       setStatus('error');
       setMessage('Something went wrong. Try again.');
+    }
+  }
+
+  async function handlePersonalise(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!workType.trim()) {
+      setShowPersonalise(false);
+      return;
+    }
+
+    setPersonaliseStatus('loading');
+
+    try {
+      const response = await fetch('/api/personalise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessType: workType })
+      });
+      const payload = (await response.json()) as PersonaliseResponse;
+      setSuggestion(payload);
+      setPersonaliseStatus('done');
+      setShowPersonalise(false);
+    } catch {
+      setShowPersonalise(false);
+      setPersonaliseStatus('idle');
     }
   }
 
@@ -112,19 +149,68 @@ function WaitlistForm({ id, source, cta }: { id: string; source: string; cta: st
           {status === 'loading' ? 'Saving...' : cta}
         </button>
       </form>
+
       <p className="mt-3 font-mono text-[11px] text-[var(--dim)]">No credit card · $12/mo locked forever · Cancel anytime</p>
-      {status !== 'idle' ? <p className="mt-4 font-body text-sm text-[var(--text)]">{message}</p> : null}
+
+      <AnimatePresence initial={false}>
+        {status === 'error' ? (
+          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="mt-4 font-body text-sm text-[var(--text)]">
+            {message}
+          </motion.p>
+        ) : null}
+
+        {position ? (
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="mt-5 rounded-[18px] border border-[rgba(79,70,229,0.22)] bg-[rgba(79,70,229,0.12)] px-5 py-5">
+            <p className="font-display text-xl font-bold text-[var(--text)]">Spot #{position} reserved.</p>
+            <p className="mt-2 font-body text-sm leading-7 text-[var(--muted)]">You are on the waitlist. We will email you before launch with access details and your founding member pricing.</p>
+          </motion.div>
+        ) : null}
+
+        {showPersonalise ? (
+          <motion.form initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} onSubmit={handlePersonalise} className="mt-5 rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-5 py-5">
+            <p className="font-body text-base font-medium text-[var(--text)]">What kind of work do you do?</p>
+            <p className="mt-2 font-body text-sm leading-7 text-[var(--muted)]">Tell us once and we will suggest the first workflow Dobly should handle for you.</p>
+            <input
+              type="text"
+              value={workType}
+              onChange={(event) => setWorkType(event.target.value)}
+              placeholder="e.g. salon owner, ecommerce founder, freelance designer"
+              className="mt-4 w-full rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-4 py-3 font-body text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--border-hi)]"
+            />
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button type="submit" disabled={personaliseStatus === 'loading'} className="primary-cta rounded-[14px] px-5 py-3 font-display text-sm font-bold text-[#F5F4FF]">
+                {personaliseStatus === 'loading' ? 'Generating...' : 'Show me my automation -\u003e'}
+              </button>
+              <button type="button" onClick={() => setShowPersonalise(false)} className="rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] px-5 py-3 font-body text-sm text-[var(--text)]">
+                Skip -\u003e
+              </button>
+            </div>
+          </motion.form>
+        ) : null}
+
+        {suggestion ? (
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="mt-5 rounded-[18px] border border-[rgba(79,70,229,0.22)] bg-[rgba(79,70,229,0.1)] px-5 py-5">
+            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--muted)]">Your first Dobly automation</p>
+            <p className="mt-3 font-display text-[22px] font-bold leading-[1.2] text-[var(--text)]">{suggestion.automation}</p>
+            <p className="mt-3 font-mono text-xs text-[var(--accent)]">Saves approximately {suggestion.timeSaved}</p>
+            <p className="mt-2 font-body text-sm text-[var(--muted)]">Uses: {suggestion.tools.join(', ')}</p>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
 
 function CountdownBlock() {
   const [countdown, setCountdown] = useState(getCountdown());
+
   useEffect(() => {
     const interval = window.setInterval(() => setCountdown(getCountdown()), 1000);
     return () => window.clearInterval(interval);
   }, []);
-  if (!countdown) return <p className="font-body text-base text-[var(--teal-hi)]">We&apos;re live. Sign up now.</p>;
+
+  if (!countdown) return <p className="font-body text-base text-[var(--teal-hi)]">We are live. Sign up now.</p>;
+
   return (
     <div className="flex flex-wrap items-center gap-4 font-mono text-sm text-[var(--muted)]">
       <span><strong className="font-display text-[var(--accent)]">{String(countdown.days).padStart(2, '0')}</strong> days</span>
@@ -138,10 +224,12 @@ function CountdownBlock() {
 function TerminalDemo() {
   const [index, setIndex] = useState(0);
   const prompt = terminalPrompts[index];
+
   useEffect(() => {
     const timer = window.setInterval(() => setIndex((value) => (value + 1) % terminalPrompts.length), 10_000);
     return () => window.clearInterval(timer);
   }, []);
+
   return (
     <div className="noise-card rounded-[24px] border border-[var(--border)] bg-[rgba(19,18,40,0.88)] px-6 py-5">
       <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
@@ -165,11 +253,12 @@ export function WaitlistPage() {
   const [loaded, setLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [source, setSource] = useState('direct');
-  const [spots, setSpots] = useState<SpotsResponse>({ count: 0, spotsLeft: TOTAL_SPOTS, percentFull: 0 });
+  const [spots, setSpots] = useState<SpotsResponse>(SEEDED_SPOTS);
   const [activeTab, setActiveTab] = useState<UseCaseCategoryId>(useCaseCategories[0].id);
   const [typedTen, setTypedTen] = useState(0);
+  const [typedSuffix, setTypedSuffix] = useState('');
   const finalCounterRef = useRef<HTMLDivElement>(null);
-  const finalCounterInView = useInView(finalCounterRef, { once: true, amount: 0.4 });
+  const finalCounterInView = useInView(finalCounterRef, { once: true, amount: 0.3 });
   const activeUseCases = useCaseCategories.find((category) => category.id === activeTab) ?? useCaseCategories[0];
 
   useEffect(() => {
@@ -188,10 +277,15 @@ export function WaitlistPage() {
 
   useEffect(() => {
     async function loadSpots() {
-      const response = await fetch('/api/spots');
-      const payload = (await response.json()) as SpotsResponse;
-      setSpots(payload);
+      try {
+        const response = await fetch('/api/spots');
+        const payload = (await response.json()) as SpotsResponse;
+        setSpots(payload.count > 0 ? payload : SEEDED_SPOTS);
+      } catch {
+        setSpots(SEEDED_SPOTS);
+      }
     }
+
     void loadSpots();
     const interval = window.setInterval(loadSpots, 10_000);
     return () => window.clearInterval(interval);
@@ -199,16 +293,41 @@ export function WaitlistPage() {
 
   useEffect(() => {
     if (!finalCounterInView) return;
+
     let frame = 0;
+    let typeTimer = 0;
+    const suffix = ' seconds.';
+    setTypedTen(0);
+    setTypedSuffix('');
+
     const start = performance.now();
     const tick = (now: number) => {
-      const progress = Math.min((now - start) / 1800, 1);
+      const progress = Math.min((now - start) / 1000, 1);
       const eased = 1 - Math.pow(1 - progress, 4);
       setTypedTen(Math.round(10 * eased));
-      if (progress < 1) frame = requestAnimationFrame(tick);
+
+      if (progress < 1) {
+        frame = requestAnimationFrame(tick);
+        return;
+      }
+
+      setTypedTen(10);
+      let index = 0;
+      typeTimer = window.setInterval(() => {
+        index += 1;
+        setTypedSuffix(suffix.slice(0, index));
+        if (index >= suffix.length) {
+          window.clearInterval(typeTimer);
+        }
+      }, 45);
     };
+
     frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearInterval(typeTimer);
+    };
   }, [finalCounterInView]);
 
   useEffect(() => {
@@ -226,7 +345,7 @@ export function WaitlistPage() {
   function useCaseClick(solution: string) {
     const input = document.getElementById('heroEmail') as HTMLInputElement | null;
     if (!input) return;
-    input.placeholder = solution.replace(/^(?:→|->)\s*/, '');
+    input.placeholder = solution.replace(/^(?:->)\s*/, '');
     input.scrollIntoView({ behavior: 'smooth', block: 'center' });
     input.focus();
   }
@@ -234,10 +353,11 @@ export function WaitlistPage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[var(--bg)] text-[var(--text)]">
       <ParticleField count={160} className="fixed inset-0 z-0 opacity-90" />
+
       <motion.nav initial={{ opacity: 0, y: -20 }} animate={loaded ? { opacity: 1, y: 0 } : {}} className={cn('fixed left-0 top-0 z-[100] w-full border-b transition duration-300', scrolled ? 'border-[rgba(255,255,255,0.06)] bg-[rgba(8,8,16,0.72)] backdrop-blur-[20px]' : 'border-transparent bg-transparent')}>
         <div className="mx-auto flex max-w-[1240px] items-center justify-between px-6 py-5 md:px-10">
           <Link href="/" className="flex items-center gap-3"><Logo className="h-9 w-9" animated /><span className="font-display text-[20px] font-extrabold lowercase tracking-[-0.04em]">dobly</span></Link>
-          <div className="hidden items-center gap-2 rounded-full border border-[rgba(79,70,229,0.22)] bg-[rgba(79,70,229,0.12)] px-4 py-[6px] md:flex"><span className="live-dot h-2 w-2 rounded-full bg-[var(--teal-hi)]" /><span className="font-mono text-[11px] text-[var(--text)]">{spots.spotsLeft} founding spots left</span></div>
+          <div className="hidden items-center gap-2 rounded-full border border-[rgba(79,70,229,0.22)] bg-[rgba(79,70,229,0.12)] px-4 py-[6px] md:flex"><span className="live-dot h-2 w-2 rounded-full bg-[var(--teal-hi)]" /><span className="font-mono text-[11px] text-[var(--text)]">{spots.spotsLeft} of {TOTAL_SPOTS} founding spots remaining</span></div>
         </div>
       </motion.nav>
 
@@ -253,9 +373,14 @@ export function WaitlistPage() {
                 <Logo className="relative h-[72px] w-[72px]" animated />
               </div>
             </div>
-            <h1 className="mt-10 font-display text-[clamp(54px,10vw,118px)] font-extrabold leading-[0.92] tracking-[-0.05em]"><span className="block">Your business,</span><span className="block">running.</span></h1>
+            <h1 className="mt-10 font-display text-[clamp(54px,10vw,118px)] font-extrabold leading-[0.92] tracking-[-0.05em]">
+              <span className="block">Your automations run.</span>
+              <span className="block">You <span style={{ color: '#00DFA0' }}>don't.</span></span>
+            </h1>
             <p className="mt-6 max-w-[620px] font-body text-[clamp(17px,2.4vw,22px)] font-light leading-[1.8] text-[var(--muted)]">Describe what needs doing. Connect your tools. Dobly handles the rest.</p>
-            <div className="mt-8 flex flex-wrap items-center gap-4"><button type="button" onClick={() => document.getElementById('heroForm')?.scrollIntoView({ behavior: 'smooth', block: 'center' })} className="primary-cta rounded-[14px] px-7 py-4 font-display text-sm font-bold text-[#F5F4FF]">Reserve founding access →</button><div className="font-body text-base text-[var(--muted)]"><span className="block font-display text-[var(--text)]">handled.</span><span>so you don&apos;t have to.</span></div></div>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <button type="button" onClick={() => document.getElementById('heroForm')?.scrollIntoView({ behavior: 'smooth', block: 'center' })} className="primary-cta rounded-[14px] px-7 py-4 font-display text-sm font-bold text-[#F5F4FF]">Reserve founding access -&gt;</button>
+            </div>
             <div className="mt-10"><CountdownBlock /></div>
             <div className="mt-10 grid max-w-[620px] grid-cols-1 gap-5 border-t border-[var(--border)] pt-6 md:grid-cols-3">
               {[['10s', 'to design the workflow'], ['live', 'activity where it matters'], ['0', 'extra manual upkeep']].map(([value, label]) => (
@@ -274,9 +399,9 @@ export function WaitlistPage() {
               <p className="mt-3 font-body text-sm leading-7 text-[var(--muted)]">Lock in $12/month before launch pricing shifts to $19.</p>
               <div className="mt-6 font-mono text-xs text-[var(--muted)]"><span className="font-bold text-[var(--accent)]">{spots.spotsLeft}</span> of {TOTAL_SPOTS} founding spots remaining</div>
               <div className="mt-3 h-[4px] overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${(spots.count / TOTAL_SPOTS) * 100}%`, backgroundColor: spots.spotsLeft < 20 ? '#C49A2A' : '#4F46E5' }} transition={{ duration: 1.2 }} className="h-full rounded-full" />
+                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.max(0, Math.min(100, spots.count))}%`, backgroundColor: spots.spotsLeft < 20 ? '#C49A2A' : '#4F46E5' }} transition={{ duration: 1.2 }} className="h-full rounded-full" />
               </div>
-              <div className="mt-6"><WaitlistForm id="heroForm" source={source} cta="Claim my spot →" /></div>
+              <div className="mt-6"><WaitlistForm id="heroForm" source={source} cta="Claim my spot -&gt;" /></div>
             </div>
           </div>
         </div>
@@ -295,29 +420,29 @@ export function WaitlistPage() {
             <span className="block">The work you keep carrying around.</span>
             <span className="mt-2 block text-[var(--accent)]">Dobly makes it stop living in your head.</span>
           </h2>
-          <div className="mt-10 grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-            <div className="flex gap-3 overflow-x-auto xl:flex-col">
+          <div className="mt-10">
+            <div className="flex gap-3 overflow-x-auto pb-3">
               {useCaseCategories.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => setActiveTab(category.id)}
                   className={cn(
-                    'rounded-full border px-4 py-3 text-left transition xl:rounded-[16px]',
+                    'shrink-0 rounded-full border px-4 py-3 text-left transition',
                     activeTab === category.id
                       ? 'border-[rgba(79,70,229,0.28)] bg-[rgba(79,70,229,0.12)] text-[var(--text)]'
                       : 'border-[var(--border)] bg-transparent text-[var(--muted)] hover:border-[var(--border-hi)] hover:text-[var(--text)]'
                   )}
                 >
-                  <span className="font-body text-sm">{category.emoji} {category.label}</span>
+                  <span className="font-body text-sm">{category.label}</span>
                 </button>
               ))}
             </div>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {activeUseCases.items.map((item) => (
                 <div key={item.problem} onClick={() => useCaseClick(item.solution)} className="group glass-clay-card float-card rounded-[18px] border border-[var(--border)] px-5 py-5">
                   <p className="font-body text-sm leading-6 text-[var(--text)]">{item.problem}</p>
                   <p className="mt-3 font-mono text-xs text-[var(--teal-hi)]">{item.solution}</p>
-                  <span className="mt-5 inline-block font-body text-sm text-[var(--accent-2)] opacity-0 transition group-hover:opacity-100">Try this →</span>
+                  <span className="mt-5 inline-block font-body text-sm text-[var(--accent-2)] opacity-0 transition group-hover:opacity-100">Try this -&gt;</span>
                 </div>
               ))}
             </div>
@@ -345,18 +470,17 @@ export function WaitlistPage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden px-6 py-24 md:px-10">
+      <section ref={finalCounterRef} className="relative overflow-hidden px-6 py-24 md:px-10">
         <ParticleField count={60} className="opacity-65" />
         <div className="relative mx-auto max-w-[1240px] text-center">
-          <div ref={finalCounterRef}>
+          <div>
             <p className="font-body text-lg text-[var(--muted)]">Your first workflow is handled in</p>
             <div className="mt-4 font-display text-[clamp(80px,12vw,144px)] font-extrabold text-[var(--accent)]">
-              {typedTen}{finalCounterInView ? <span className="type-tail"> seconds.</span> : null}
+              {typedTen}{typedSuffix}
             </div>
           </div>
-          <p className="mt-4 font-body text-lg font-light text-[var(--muted)]">handled. so you don&apos;t have to.</p>
           <div className="mx-auto mt-8 max-w-[640px]">
-            <WaitlistForm id="finalForm" source={source} cta="Join the waitlist →" />
+            <WaitlistForm id="finalForm" source={source} cta="Join the waitlist -&gt;" />
           </div>
         </div>
       </section>
@@ -366,7 +490,7 @@ export function WaitlistPage() {
           <div>
             <div className="flex items-center gap-3"><Logo className="h-[28px] w-[28px]" /><span className="font-display text-base font-bold lowercase">dobly</span></div>
             <p className="mt-4 font-body text-[13px] text-[var(--muted)]">Built in Mombasa, Kenya</p>
-            <p className="mt-2 font-mono text-[11px] text-[var(--dim)]">what needs to happen, happens.</p>
+            <p className="mt-2 font-mono text-[11px] text-[var(--dim)]">handled. so you do not have to.</p>
           </div>
           <div className="flex flex-col gap-3 font-body text-[13px] text-[var(--muted)]">
             <a href="#heroForm" className="hover:text-[var(--text)]">Join</a>
